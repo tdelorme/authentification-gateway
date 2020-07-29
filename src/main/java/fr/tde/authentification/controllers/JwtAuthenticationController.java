@@ -1,20 +1,24 @@
 package fr.tde.authentification.controllers;
 
 import fr.tde.authentification.configurations.JwtTokenUtil;
+import fr.tde.authentification.controllers.requests.CheckUserRequest;
+import fr.tde.authentification.controllers.responses.BooleanResponse;
 import fr.tde.authentification.models.JwtRequest;
 import fr.tde.authentification.models.JwtResponse;
-import fr.tde.authentification.models.User;
 import fr.tde.authentification.services.JwtUserDetailsService;
-import fr.tde.authentification.services.UserService;
-import javassist.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
 
 @RestController
 @CrossOrigin
+@Slf4j
 public class JwtAuthenticationController {
 
 
@@ -24,15 +28,11 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
-    @Autowired
-    private UserService userService;
-
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest)
     {
         if(authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword())) {
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-
+            final UserDetails userDetails = new User(authenticationRequest.getUsername(), authenticationRequest.getPassword(), new ArrayList<>());
 
             final String token = jwtTokenUtil.generateToken(userDetails);
             return ResponseEntity.ok(new JwtResponse(token));
@@ -43,17 +43,14 @@ public class JwtAuthenticationController {
 
     }
 
-    private boolean authenticate(String username, String password) throws Exception {
-        try {
-           User user = userService.getUserByUsernameAndPassword(username, password);
-           if( user != null) {
-               return true;
-           }
-           else{
-               return false;
-           }
-        } catch (NotFoundException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
+    private boolean authenticate(String username, String password) {
+        RestTemplate restTemplate = new RestTemplate();
+        BooleanResponse response = restTemplate.postForObject("http://localhost:8081/users/check",new CheckUserRequest(username, password),BooleanResponse.class);
+        if( response != null )
+            return response.getResponse();
+        else {
+            log.error("Service user not reachable !");
+            return false;
         }
     }
 
