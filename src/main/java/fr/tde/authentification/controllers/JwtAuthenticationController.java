@@ -7,6 +7,7 @@ import fr.tde.authentification.models.JwtRequest;
 import fr.tde.authentification.models.JwtResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 @Slf4j
 public class JwtAuthenticationController {
 
+    @Value("${user.check}")
+    private String checkUrl;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -41,7 +44,7 @@ public class JwtAuthenticationController {
 
     private boolean authenticate(String username, String password) {
         RestTemplate restTemplate = new RestTemplate();
-        BooleanResponse response = restTemplate.postForObject("http://localhost:8081/users/check",new CheckUserRequest(username, password),BooleanResponse.class);
+        BooleanResponse response = restTemplate.postForObject(checkUrl,new CheckUserRequest(username, password),BooleanResponse.class);
         if( response != null )
             return response.getResponse();
         else {

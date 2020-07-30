@@ -3,6 +3,7 @@ package fr.tde.authentification.services;
 import fr.tde.authentification.controllers.requests.CheckUserRequest;
 import fr.tde.authentification.controllers.responses.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,11 +16,14 @@ import java.util.ArrayList;
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
+    @Value("${user.username}")
+    private String usernameUrl;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
         RestTemplate restTemplate = new RestTemplate();
-        UserResponse userResponse = restTemplate.postForObject("http://localhost:8081/users/username", new CheckUserRequest(username, null), UserResponse.class);
+        UserResponse userResponse = restTemplate.postForObject(usernameUrl, new CheckUserRequest(username, null), UserResponse.class);
 
         if(userResponse != null && userResponse.getUsername() != null && userResponse.getPassword() != null) {
             return new User(userResponse.getUsername(), userResponse.getPassword(), new ArrayList<>());
