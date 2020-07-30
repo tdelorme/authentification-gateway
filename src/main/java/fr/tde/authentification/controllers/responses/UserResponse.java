@@ -1,4 +1,4 @@
-package fr.tde.usersservice.controllers.responses;
+package fr.tde.authentification.controllers.responses;
 
 import lombok.Data;
 

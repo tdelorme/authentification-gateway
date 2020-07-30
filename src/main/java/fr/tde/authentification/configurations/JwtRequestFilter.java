@@ -1,13 +1,16 @@
 package fr.tde.authentification.configurations;
 
-import fr.tde.authentification.services.JwtUserDetailsService;
+import fr.tde.authentification.controllers.requests.CheckUserRequest;
+import fr.tde.authentification.controllers.responses.UserResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -15,15 +18,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter
 {
-
-    @Autowired
-    private JwtUserDetailsService jwtUserDetailsService;
-
-
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
@@ -58,7 +57,10 @@ public class JwtRequestFilter extends OncePerRequestFilter
         if (username != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null)
         {
-            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
+            RestTemplate restTemplate = new RestTemplate();
+            UserResponse userResponse = restTemplate.postForObject("http://localhost:8081/users/username",new CheckUserRequest(username, null),UserResponse.class);
+
+            UserDetails userDetails = new User(userResponse.getUsername(), userResponse.getPassword(), new ArrayList<>());
             // if token is valid configure Spring Security to manually set
             // authentication
             if (jwtTokenUtil.validateToken(jwtToken, userDetails))

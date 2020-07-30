@@ -5,7 +5,6 @@ import fr.tde.authentification.controllers.requests.CheckUserRequest;
 import fr.tde.authentification.controllers.responses.BooleanResponse;
 import fr.tde.authentification.models.JwtRequest;
 import fr.tde.authentification.models.JwtResponse;
-import fr.tde.authentification.services.JwtUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +23,6 @@ public class JwtAuthenticationController {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
-
-    @Autowired
-    private JwtUserDetailsService userDetailsService;
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest)

@@ -1,20 +1,15 @@
-package fr.tde.authentification.models;
+package fr.tde.authentification.models.dtos;
 
-import javax.persistence.*;
+import lombok.Data;
+
 import java.util.Set;
 
-@Entity
-@Table(name = "roles")
+@Data
 public class Role {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+
     private Long id;
-
-    @Column
     private String name;
-
-    @ManyToMany
     private Set<User> users;
 
 }
